@@ -1,0 +1,16 @@
+Designing and implementing a simplified market data management system involves several components, including data ingestion, processing, storage, and retrieval. Here's a step-by-step guide to design and implement this system in Java:
+
+System Overview
+Data Ingestion: Fetch bond market data from investing.com.
+Data Processing: Process and format the fetched data.
+Data Storage: Save historical time series data to a storage system.
+Data Retrieval: Provide functionality to query and retrieve historical data.
+
+
+
+Explanation
+Interfaces: Define clear contracts for the ingestor, processor, and repository.
+Data Ingestion: Fetch raw data from the URL and pass it to the processor.
+Data Processing: Convert raw data into a MarketData object.
+Data Storage: Store processed data in an in-memory repository.
+Main Class: Demonstrate the data ingestion, processing, and retrieval workflow.
