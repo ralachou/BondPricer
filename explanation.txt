@@ -14,3 +14,13 @@ Data Ingestion: Fetch raw data from the URL and pass it to the processor.
 Data Processing: Convert raw data into a MarketData object.
 Data Storage: Store processed data in an in-memory repository.
 Main Class: Demonstrate the data ingestion, processing, and retrieval workflow.
+
+
+
+To add functionality for calculating bond price and Net Present Value (NPV) for a bond, we need to enhance our current system with these financial computations. Let's proceed by defining the necessary interfaces and implementing the required functionality.
+
+
+Explanation
+BondPriceCalculator: Interface and implementation for calculating the bond price based on the present value of future cash flows.
+NPVCalculator: Interface and implementation for calculating the Net Present Value of the bond.
+Main Class: Demonstrates data ingestion, historical data retrieval, and calculations for bond price and NPV.
