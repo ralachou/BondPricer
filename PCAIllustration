@@ -1,0 +1,150 @@
+#Dataset:
+import numpy as np
+import pandas as pd
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
+# Example data: credit spreads (in %)
+data = {
+    "Year 1": [5, 3, 4],  # Ali, Sara, Omar
+    "Year 2": [6, 4, 5],
+    "Year 3": [4, 2, 3],
+}
+
+# Create a DataFrame
+df = pd.DataFrame(data, index=["Ali", "Sara", "Omar"])
+print("Original Data:")
+print(df)
+
+#      Year 1  Year 2  Year 3
+#Ali       5       6       4
+#Sara      3       4       2
+#Omar      4       5       3
+
+
+
+
+# Standardize the data
+#PCA works best with standardized data (mean = 0, variance = 1).
+
+
+scaler = StandardScaler()
+data_scaled = scaler.fit_transform(df)
+
+print("\nStandardized Data:")
+print(pd.DataFrame(data_scaled, index=df.index, columns=df.columns))
+
+
+#Step 2: Apply PCA
+#Use the PCA class from scikit-learn
+
+
+# Perform PCA
+pca = PCA(n_components=2)  # Reduce to 2 components
+principal_components = pca.fit_transform(data_scaled)
+
+# Create a DataFrame for the principal components
+pca_df = pd.DataFrame(
+    principal_components, 
+    index=df.index, 
+    columns=["Principal Component 1", "Principal Component 2"]
+)
+
+print("\nPrincipal Components:")
+print(pca_df)
+
+#Step 3: Explained Variance
+#Check how much of the total variation each principal component explains.
+
+
+explained_variance = pca.explained_variance_ratio_
+print("\nExplained Variance Ratio:")
+print(f"PC1: {explained_variance[0]:.2f}, PC2: {explained_variance[1]:.2f}")
+
+
+
+
+
+#############################################################
+
+
+import numpy as np
+import pandas as pd
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
+# Example data: credit spreads (in %)
+data = {
+    "Year 1": [5, 3, 4],  # Ali, Sara, Omar
+    "Year 2": [6, 4, 5],
+    "Year 3": [4, 2, 3],
+}
+
+# Create a DataFrame
+df = pd.DataFrame(data, index=["Ali", "Sara", "Omar"])
+print("Original Data:")
+print(df)
+
+# Standardize the data
+scaler = StandardScaler()
+data_scaled = scaler.fit_transform(df)
+
+print("\nStandardized Data:")
+print(pd.DataFrame(data_scaled, index=df.index, columns=df.columns))
+
+# Perform PCA
+pca = PCA(n_components=2)  # Reduce to 2 components
+principal_components = pca.fit_transform(data_scaled)
+
+# Create a DataFrame for the principal components
+pca_df = pd.DataFrame(
+    principal_components, 
+    index=df.index, 
+    columns=["Principal Component 1", "Principal Component 2"]
+)
+
+print("\nPrincipal Components:")
+print(pca_df)
+
+# Explained Variance Ratio
+explained_variance = pca.explained_variance_ratio_
+print("\nExplained Variance Ratio:")
+print(f"PC1: {explained_variance[0]:.2f}, PC2: {explained_variance[1]:.2f}")
+
+
+
+Original Data:
+      Year 1  Year 2  Year 3
+Ali       5       6       4
+Sara      3       4       2
+Omar      4       5       3
+
+
+Standardized Data:
+         Year 1    Year 2    Year 3
+Ali   1.224745  1.224745  1.224745
+Sara -1.224745 -1.224745 -1.224745
+Omar  0.000000  0.000000  0.000000
+
+
+Principal Components:
+
+      Principal Component 1  Principal Component 2
+Ali                 2.121320                0.00000
+Sara               -2.121320                0.00000
+Omar                0.000000                0.00000
+
+
+Explained Variance Ratio:
+
+Explained Variance Ratio:
+
+
+Explanation of Results:
+Principal Component 1 (PC1):
+Captures all the variation because the spreads for Ali, Sara, and Omar follow a clear up-down pattern.
+Principal Component 2 (PC2):
+Captures almost no variation because there’s no significant difference after accounting for PC1.
+Simplification:
+The 3-dimensional data (Year 1, Year 2, Year 3) is reduced to 1 principal component (PC1), which explains 100% of the variation.
+
