@@ -1,0 +1,86 @@
+import os
+import pandas as pd
+import glob
+
+def extract_eod_data(file_path, source):
+    df = pd.read_csv(file_path)
+    
+    if source == "Opics":
+        namespace_col = 'DataDependecyReport.namespace'
+        object_col = 'DataDependecyReport.object'
+    elif source == "Catalyst":
+        namespace_col = 'DataDependecyReportRates.namespace'
+        object_col = 'DataDependecyReportRates.object'
+    elif source == "Calypso":
+        namespace_col = 'DataDepsExObject.namespace'
+        key_col = 'DataDepsExValue.key'
+        datatype_col = 'DataDepsExValue.DataType'
+        object_col = 'DataDepsExValue.Object'
+    else:
+        return None
+    
+    namespaces = df[namespace_col].dropna().unique()
+    
+    sample_object = df[object_col].dropna().iloc[0] if object_col in df.columns else None
+    
+    if source == "Calypso":
+        sample_key = df[key_col].dropna().iloc[0] if key_col in df.columns else None
+        sample_datatype = df[datatype_col].dropna().iloc[0] if datatype_col in df.columns else None
+        return [file_path, source, namespaces, sample_key, sample_datatype, sample_object]
+    
+    return [file_path, source, namespaces, sample_object]
+
+def extract_flash_data(file_path, source, namespace_col, object_col=None, key_col=None, datatype_col=None):
+    df = pd.read_csv(file_path)
+    
+    namespaces = df[namespace_col].dropna().unique()
+    
+    sample_object = df[object_col].dropna().iloc[0] if object_col and object_col in df.columns else None
+    sample_key = df[key_col].dropna().iloc[0] if key_col and key_col in df.columns else None
+    sample_datatype = df[datatype_col].dropna().iloc[0] if datatype_col and datatype_col in df.columns else None
+    
+    return [file_path, source, namespaces, sample_key, sample_datatype, sample_object]
+
+def process_folder(folder_path, eod=True):
+    summary = []
+    
+    file_patterns = {
+        "Opics": "Opics*DataDependencyView*EOD*.csv",
+        "Catalyst": "Catalyst*DataDependencyView*EOD*.csv",
+        "Calypso": "Calypso*DataDependencyView*EOD*.csv"
+    }
+    
+    flash_patterns = {
+        "Calypso_HedgeRisk": ("Calypso*CREDIT-HEDGE_SNAPSHOT-HedgeRisk*DataDependenciesView*.csv", 'DataDepsExObject.namespace', 'DataDepsExValue.key', 'DataDepsExValue.DataType', 'DataDepsExValue.Object'),
+        "Catalyst_HedgeRisk": ("Catalyst*CREDIT-HEDGE_SNAPSHOT-HedgeRisk*DataDependenciesView*.csv", 'DataDepsExObject.namespace', 'DataDepsExValue.key', 'DataDepsExValue.DataType', 'DataDepsExValue.Object'),
+        "Catalyst_BondHighGrade": ("Catalyst*CREDIT-HEDGE_SNAPSHOT-BondHighGradeDesk*DataDependenciesView*.csv", 'DataDependecyReportRates.namespace', 'DataDependecyReportRates.object'),
+        "Catalyst_BondYield": ("Catalyst*CREDIT-HEDGE_SNAPSHOT-BondYieldDesk*DataDependenciesView*.csv", 'DataDependecyReportRates.namespace', 'DataDependecyReportRates.object'),
+        "Catalyst_BondYield2": ("Catalyst*CREDIT-HEDGE_SNAPSHOT-BondYieldDesk*DataDependenciesView*.csv", 'DataDependecyReport.namespace', 'DataDependecyReport.object')
+    }
+    
+    if eod:
+        for source, pattern in file_patterns.items():
+            for file_path in glob.glob(os.path.join(folder_path, pattern)):
+                summary.append(extract_eod_data(file_path, source))
+    else:
+        for source, (pattern, namespace_col, *cols) in flash_patterns.items():
+            for file_path in glob.glob(os.path.join(folder_path, pattern)):
+                summary.append(extract_flash_data(file_path, source, namespace_col, *cols))
+    
+    return summary
+
+def main():
+    base_path = r"C:\\users\\ID\\OneDrive\\Credit\\Credit Dependency Report"
+    eod_path = os.path.join(base_path, "EOD")
+    flash_path = os.path.join(base_path, "Flash")
+    
+    eod_summary = process_folder(eod_path, eod=True)
+    flash_summary = process_folder(flash_path, eod=False)
+    
+    summary_df = pd.DataFrame(eod_summary + flash_summary, columns=["File", "Source", "Namespace", "Key", "DataType", "Object"])
+    summary_df.to_csv(os.path.join(base_path, "Summary_Report.csv"), index=False)
+    
+    print("Summary report generated successfully.")
+
+if __name__ == "__main__":
+    main()
