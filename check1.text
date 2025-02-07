@@ -13,7 +13,7 @@ def extract_eod_data(file_path, source, namespace_col, object_col=None, key_col=
     
     rows = []
     for ns in namespaces:
-        rows.append([file_path, source, ns, sample_key, sample_datatype, sample_object])
+        rows.append([file_path, source, "eod", ns, sample_key, sample_datatype, sample_object])
     
     return rows
 
@@ -28,7 +28,7 @@ def extract_flash_data(file_path, source, namespace_col, object_col=None, key_co
     
     rows = []
     for ns in namespaces:
-        rows.append([file_path, source, ns, sample_key, sample_datatype, sample_object])
+        rows.append([file_path, source, "flash", ns, sample_key, sample_datatype, sample_object])
     
     return rows
 
@@ -65,7 +65,7 @@ def main():
     eod_summary = process_folder(eod_path, eod=True)
     flash_summary = process_folder(flash_path, eod=False)
     
-    summary_df = pd.DataFrame(eod_summary + flash_summary, columns=["File", "Source", "Namespace", "Key", "DataType", "Object"])
+    summary_df = pd.DataFrame(eod_summary + flash_summary, columns=["File", "Source", "RunType", "Namespace", "Key", "DataType", "Object"])
     summary_df.to_csv(os.path.join(base_path, "Summary_Report.csv"), index=False)
     
     print("Summary report generated successfully.")
