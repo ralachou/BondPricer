@@ -1,0 +1,74 @@
+import os
+import pandas as pd
+import glob
+
+def extract_eod_data(file_path, source, namespace_col, object_col=None, key_col=None, datatype_col=None):
+    df = pd.read_csv(file_path)
+    
+    namespaces = df[namespace_col].dropna().unique()
+    
+    sample_object = df[object_col].dropna().iloc[0] if object_col and object_col in df.columns else None
+    sample_key = df[key_col].dropna().iloc[0] if key_col and key_col in df.columns else None
+    sample_datatype = df[datatype_col].dropna().iloc[0] if datatype_col and datatype_col in df.columns else None
+    
+    rows = []
+    for ns in namespaces:
+        rows.append([file_path, source, ns, sample_key, sample_datatype, sample_object])
+    
+    return rows
+
+def extract_flash_data(file_path, source, namespace_col, object_col=None, key_col=None, datatype_col=None):
+    df = pd.read_csv(file_path)
+    
+    namespaces = df[namespace_col].dropna().unique()
+    
+    sample_object = df[object_col].dropna().iloc[0] if object_col and object_col in df.columns else None
+    sample_key = df[key_col].dropna().iloc[0] if key_col and key_col in df.columns else None
+    sample_datatype = df[datatype_col].dropna().iloc[0] if datatype_col and datatype_col in df.columns else None
+    
+    rows = []
+    for ns in namespaces:
+        rows.append([file_path, source, ns, sample_key, sample_datatype, sample_object])
+    
+    return rows
+
+def process_folder(folder_path, eod=True):
+    summary = []
+    
+    eod_patterns = {
+        "Calypso": ("Calypso*CREDIT-HEDGE_EOD*DataDependenciesView*.csv", 'DataDepsExObject.namespace', 'DataDepsExValue.key', 'DataDepsExValue.DataType', 'DataDepsExValue.Object'),
+        "Catalyst": ("Catalyst*CREDIT-HEDGE_EOD*DataDependenciesView*.csv", 'DataDependecyReportRates.namespace', 'DataDependecyReportRates.object'),
+        "Opics": ("Opics*CREDIT-HEDGE_EOD*DataDependenciesView*.csv", 'DataDependecyReport.namespace', 'DataDependecyReport.object')
+    }
+    
+    flash_patterns = {
+        "Calypso_HedgeRisk": ("Calypso*CREDIT-HEDGE_SNAPSHOT-HedgeRisk*DataDependenciesView*.csv", 'DataDepsExObject.namespace', 'DataDepsExValue.key', 'DataDepsExValue.DataType', 'DataDepsExValue.Object'),
+        "Catalyst_HedgeRisk": ("Catalyst*CREDIT-HEDGE_SNAPSHOT-HedgeRisk*DataDependenciesView*.csv", 'DataDepsExObject.namespace', 'DataDepsExValue.key', 'DataDepsExValue.DataType', 'DataDepsExValue.Object'),
+        "Catalyst_BondHighGrade": ("Catalyst*CREDIT-HEDGE_SNAPSHOT-BondHighGradeDesk*DataDependenciesView*.csv", 'DataDependecyReportRates.namespace', 'DataDependecyReportRates.object'),
+        "Catalyst_BondYield": ("Catalyst*CREDIT-HEDGE_SNAPSHOT-BondYieldDesk*DataDependenciesView*.csv", 'DataDependecyReportRates.namespace', 'DataDependecyReportRates.object'),
+        "Catalyst_BondYield2": ("Catalyst*CREDIT-HEDGE_SNAPSHOT-BondYieldDesk*DataDependenciesView*.csv", 'DataDependecyReport.namespace', 'DataDependecyReport.object')
+    }
+    
+    patterns = eod_patterns if eod else flash_patterns
+    
+    for source, (pattern, namespace_col, *cols) in patterns.items():
+        for file_path in glob.glob(os.path.join(folder_path, pattern)):
+            summary.extend(extract_eod_data(file_path, source, namespace_col, *cols) if eod else extract_flash_data(file_path, source, namespace_col, *cols))
+    
+    return summary
+
+def main():
+    base_path = r"C:\\users\\ID\\OneDrive\\Credit\\Credit Dependency Report"
+    eod_path = os.path.join(base_path, "EOD")
+    flash_path = os.path.join(base_path, "Flash")
+    
+    eod_summary = process_folder(eod_path, eod=True)
+    flash_summary = process_folder(flash_path, eod=False)
+    
+    summary_df = pd.DataFrame(eod_summary + flash_summary, columns=["File", "Source", "Namespace", "Key", "DataType", "Object"])
+    summary_df.to_csv(os.path.join(base_path, "Summary_Report.csv"), index=False)
+    
+    print("Summary report generated successfully.")
+
+if __name__ == "__main__":
+    main()
