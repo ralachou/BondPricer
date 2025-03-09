@@ -1,0 +1,39 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import ace_tools as tools
+
+# Simulation Parameters
+np.random.seed(42)  # For reproducibility
+days = 90  # Simulate for 90 days
+initial_rate = 2.00  # Starting benchmark rate (e.g., SIFMA, SOFR) in %
+spread = 0.50  # Fixed spread in %
+volatility = 0.10  # Daily rate fluctuation in %
+
+# Simulate daily floating benchmark rate using random walk
+benchmark_rates = [initial_rate]
+for _ in range(days - 1):
+    new_rate = benchmark_rates[-1] + np.random.normal(0, volatility)
+    benchmark_rates.append(max(new_rate, 0))  # Ensure rates don't go negative
+
+# Compute daily coupon rates for low floater bond
+coupon_rates = [r + spread for r in benchmark_rates]
+
+# Create DataFrame
+dates = pd.date_range(start="2025-03-10", periods=days, freq='D')
+df = pd.DataFrame({"Date": dates, "Benchmark Rate (%)": benchmark_rates, "Coupon Rate (%)": coupon_rates})
+
+# Display DataFrame
+tools.display_dataframe_to_user(name="Low Floater Rate Simulation", dataframe=df)
+
+# Plot the rate movements
+plt.figure(figsize=(12, 6))
+plt.plot(df["Date"], df["Benchmark Rate (%)"], label="Benchmark Rate (e.g., SOFR, SIFMA)", linestyle='dashed')
+plt.plot(df["Date"], df["Coupon Rate (%)"], label="Low Floater Coupon Rate", linewidth=2)
+plt.xlabel("Date")
+plt.ylabel("Rate (%)")
+plt.title("Simulated Daily Rate Resets for a Low Floater Bond")
+plt.legend()
+plt.grid(True)
+plt.xticks(rotation=45)
+plt.show()
